@@ -87,7 +87,7 @@ pipeline {
 
         stage('Push mr') {
             when {
-                changeRequest branch: 'main'
+                changeRequest targetBranch: 'main'
             }
             steps {
                 withCredentials([string(credentialsId: 'dhub', variable: 'TOKEN')]) {
