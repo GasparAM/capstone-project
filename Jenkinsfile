@@ -1,5 +1,5 @@
 pipeline {
-    agent 'FargateAgent'
+    agent {label 'FargateAgent'}
 
     triggers {
         pollSCM '*/5 * * * *'
