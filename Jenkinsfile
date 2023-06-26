@@ -16,7 +16,7 @@ pipeline {
         }
         stage('Checkstyle') {
             when {
-                changeRequest branch: 'main'
+                changeRequest target: 'main'
             }
             steps {
                 sh '''
@@ -27,7 +27,7 @@ pipeline {
 
         stage('Test') {
             when {
-                changeRequest branch: 'main'
+                changeRequest target: 'main'
             }
             steps {
                 sh '''
@@ -38,7 +38,7 @@ pipeline {
 
         stage('Build') {
             when {
-                changeRequest branch: 'main'
+                changeRequest target: 'main'
             }
             steps {
                 sh '''
@@ -61,7 +61,7 @@ pipeline {
 
         stage('Docker up mr') {
             when {
-                changeRequest branch: 'main'
+                changeRequest target: 'main'
             }
             steps {
                 sh '''
@@ -87,7 +87,7 @@ pipeline {
 
         stage('Push mr') {
             when {
-                changeRequest()
+                changeRequest target: 'main'
             }
             steps {
                 withCredentials([string(credentialsId: 'dhub', variable: 'TOKEN')]) {
