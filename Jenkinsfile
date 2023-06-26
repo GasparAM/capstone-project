@@ -6,6 +6,13 @@ pipeline {
     }
 
     stages {
+        stage('ENV') {
+            steps {
+                sh '''
+                    echo "${env.CHANGE_ID}, ${env.CHANGE_BRANCH}, ${env.CHANGE_ID}"
+                '''
+            }
+        }
         stage('Checkstyle') {
             when {
                 environment(name: "CHANGE_BRANCH", value: "main")
