@@ -9,7 +9,7 @@ pipeline {
         stage('ENV') {
             steps {
                 sh '''
-                    echo "${env.CHANGE_ID}, ${env.CHANGE_BRANCH}, ${env.CHANGE_ID}"
+                    printenv
                 '''
             }
         }
