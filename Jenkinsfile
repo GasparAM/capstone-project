@@ -1,14 +1,24 @@
 pipeline {
-    agent {label 'FargateAgent'}
+    agent {label 'ec2'}
 
     triggers {
-        pollSCM '*/5 * * * *'
+        githubPush()
     }
 
     stages {
+        stage('ENV') {
+            steps {
+                sh '''
+                    printenv
+                    echo $CHANGE_BRANCH
+                '''
+            }
+        }
         stage('Checkstyle') {
             when {
-                environment(name: "CHANGE_TARGET", value: "main")
+                not {
+                    branch 'main'
+                }
             }
             steps {
                 sh '''
@@ -19,7 +29,9 @@ pipeline {
 
         stage('Test') {
             when {
-                environment(name: "CHANGE_TARGET", value: "main")
+                not {
+                    branch 'main'
+                }
             }
             steps {
                 sh '''
@@ -30,11 +42,21 @@ pipeline {
 
         stage('Build') {
             when {
-                environment(name: "CHANGE_TARGET", value: "main")
+                not {
+                    branch 'main'
+                }
             }
             steps {
                 sh '''
                     ./mvnw clean package -Dmaven.test.skip=true
+                '''
+            }
+        }
+
+        stage('Set up ECR environment') {
+            steps {
+                sh '''
+                    echo "{\"credsStore\": \"ecr-login\"}" > $HOME/.docker/config.json
                 '''
             }
         }
@@ -53,7 +75,9 @@ pipeline {
 
         stage('Docker up mr') {
             when {
-                environment(name: "CHANGE_TARGET", value: "main")
+                not {
+                    branch 'main'
+                }
             }
             steps {
                 sh '''
@@ -79,7 +103,9 @@ pipeline {
 
         stage('Push mr') {
             when {
-                environment(name: "CHANGE_TARGET", value: "main")
+                not {
+                    branch 'main'
+                }
             }
             steps {
                 withCredentials([string(credentialsId: 'dhub', variable: 'TOKEN')]) {
