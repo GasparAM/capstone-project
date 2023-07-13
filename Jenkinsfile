@@ -2,7 +2,7 @@ pipeline {
     agent {label 'ec2'}
 
     triggers {
-        pollSCM '*/5 * * * *'
+        githubPush()
     }
 
     stages {
@@ -56,10 +56,6 @@ pipeline {
         stage('Set up ECR environment') {
             steps {
                 sh '''
-                    apt update
-                    apt install docker.io amazon-ecr-credential-helper openrc -y
-
-                    mkdir -p $HOME/.docker
                     echo "{\"credsStore\": \"ecr-login\"}" > $HOME/.docker/config.json
                 '''
             }
