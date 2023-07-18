@@ -56,6 +56,7 @@ pipeline {
         stage('Set up ECR environment') {
             steps {
                 sh '''
+                    mkdir -p $HOME/.docker
                     echo "{\"credsStore\": \"ecr-login\"}" > $HOME/.docker/config.json
                 '''
             }
