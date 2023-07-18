@@ -68,7 +68,6 @@ pipeline {
             }
             steps {
                 sh '''
-                    service docker start
                     docker build -t "113304117666.dkr.ecr.eu-north-1.amazonaws.com/main:${GIT_COMMIT}" ./ 
                 '''
             }
@@ -82,7 +81,6 @@ pipeline {
             }
             steps {
                 sh '''
-                    service docker start
                     docker build -t "113304117666.dkr.ecr.eu-north-1.amazonaws.com/mr:${GIT_COMMIT}" ./ 
                 '''
             }
@@ -95,7 +93,6 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'dhub', variable: 'TOKEN')]) {
                     sh '''
-                        echo $TOKEN | docker login -u gavetisyangd --password-stdin
                         docker push "113304117666.dkr.ecr.eu-north-1.amazonaws.com/main:${GIT_COMMIT}"
                     '''
                 }
@@ -111,7 +108,6 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'dhub', variable: 'TOKEN')]) {
                     sh '''
-                        echo $TOKEN | docker login -u gavetisyangd --password-stdin
                         docker push "113304117666.dkr.ecr.eu-north-1.amazonaws.com/mr:${GIT_COMMIT}"
                     '''
                 }
