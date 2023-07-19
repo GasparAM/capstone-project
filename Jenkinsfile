@@ -56,8 +56,7 @@ pipeline {
         stage('Set up ECR environment') {
             steps {
                 sh '''
-                    mkdir -p $HOME/.docker
-                    echo "{\"credsStore\": \"ecr-login\"}" > $HOME/.docker/config.json
+                    apk add --no-cache aws-cli
                 '''
             }
         }
@@ -93,6 +92,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'dhub', variable: 'TOKEN')]) {
                     sh '''
+                        aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin "113304117666.dkr.ecr.eu-north-1.amazonaws.com"
                         docker push "113304117666.dkr.ecr.eu-north-1.amazonaws.com/main:${GIT_COMMIT}"
                     '''
                 }
@@ -108,6 +108,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'dhub', variable: 'TOKEN')]) {
                     sh '''
+                        aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin "113304117666.dkr.ecr.eu-north-1.amazonaws.com"
                         docker push "113304117666.dkr.ecr.eu-north-1.amazonaws.com/mr:${GIT_COMMIT}"
                     '''
                 }
