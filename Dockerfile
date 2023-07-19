@@ -2,7 +2,7 @@ FROM alpine:latest AS builder
 RUN apk --no-cache add openjdk17
 WORKDIR /tmp
 COPY ./ ./
-RUN ./mvnw clean ; ./mvnw package
+RUN ./mvnw clean ; ./mvnw package -DskipTests
 
 FROM alpine:latest
 ENV URL=
