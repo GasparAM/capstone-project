@@ -40,23 +40,11 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            when {
-                not {
-                    branch 'main'
-                }
-            }
-            steps {
-                sh '''
-                    ./mvnw clean package -Dmaven.test.skip=true
-                '''
-            }
-        }
-
         stage('Set up ECR environment') {
             steps {
                 sh '''
-                    echo "{\"credsStore\": \"ecr-login\"}" > $HOME/.docker/config.json
+                    apk add --no-cache aws-cli
+                    aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin "113304117666.dkr.ecr.eu-north-1.amazonaws.com"
                 '''
             }
         }
@@ -67,7 +55,6 @@ pipeline {
             }
             steps {
                 sh '''
-                    service docker start
                     docker build -t "113304117666.dkr.ecr.eu-north-1.amazonaws.com/main:${GIT_COMMIT}" ./ 
                 '''
             }
@@ -81,7 +68,6 @@ pipeline {
             }
             steps {
                 sh '''
-                    service docker start
                     docker build -t "113304117666.dkr.ecr.eu-north-1.amazonaws.com/mr:${GIT_COMMIT}" ./ 
                 '''
             }
@@ -92,12 +78,9 @@ pipeline {
                 branch 'main'
             }
             steps {
-                withCredentials([string(credentialsId: 'dhub', variable: 'TOKEN')]) {
-                    sh '''
-                        echo $TOKEN | docker login -u gavetisyangd --password-stdin
-                        docker push "113304117666.dkr.ecr.eu-north-1.amazonaws.com/main:${GIT_COMMIT}"
-                    '''
-                }
+                sh '''
+                    docker push "113304117666.dkr.ecr.eu-north-1.amazonaws.com/main:${GIT_COMMIT}"
+                '''
             }
         }
 
@@ -108,12 +91,9 @@ pipeline {
                 }
             }
             steps {
-                withCredentials([string(credentialsId: 'dhub', variable: 'TOKEN')]) {
-                    sh '''
-                        echo $TOKEN | docker login -u gavetisyangd --password-stdin
-                        docker push "113304117666.dkr.ecr.eu-north-1.amazonaws.com/mr:${GIT_COMMIT}"
-                    '''
-                }
+                sh '''
+                    docker push "113304117666.dkr.ecr.eu-north-1.amazonaws.com/mr:${GIT_COMMIT}"
+                '''
             }
         }
     }
