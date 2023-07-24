@@ -40,23 +40,11 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            when {
-                not {
-                    branch 'main'
-                }
-            }
-            steps {
-                sh '''
-                    ./mvnw clean package -Dmaven.test.skip=true
-                '''
-            }
-        }
-
         stage('Set up ECR environment') {
             steps {
                 sh '''
                     apk add --no-cache aws-cli
+                    aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin "113304117666.dkr.ecr.eu-north-1.amazonaws.com"
                 '''
             }
         }
@@ -91,7 +79,6 @@ pipeline {
             }
             steps {
                 sh '''
-                    aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin "113304117666.dkr.ecr.eu-north-1.amazonaws.com"
                     docker push "113304117666.dkr.ecr.eu-north-1.amazonaws.com/main:${GIT_COMMIT}"
                 '''
             }
@@ -105,7 +92,6 @@ pipeline {
             }
             steps {
                 sh '''
-                    aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin "113304117666.dkr.ecr.eu-north-1.amazonaws.com"
                     docker push "113304117666.dkr.ecr.eu-north-1.amazonaws.com/mr:${GIT_COMMIT}"
                 '''
             }
