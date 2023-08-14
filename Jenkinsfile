@@ -55,7 +55,8 @@ pipeline {
             }
             steps {
                 sh '''
-                    docker build -t "113304117666.dkr.ecr.eu-north-1.amazonaws.com/main:${GIT_COMMIT}" ./ 
+                    export VER=$(aws ecr describe-images --repository-name=main --regio=eu-north-1 --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' | tr -d \" | awk 'BEGIN {FS="."}; {print $1"."$2"."$3 + 1}')
+                    docker build -t "113304117666.dkr.ecr.eu-north-1.amazonaws.com/main:${VER}" ./ 
                 '''
             }
         }
