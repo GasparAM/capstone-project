@@ -80,7 +80,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    docker push "113304117666.dkr.ecr.eu-north-1.amazonaws.com/main:${GIT_COMMIT}"
+                    docker push "113304117666.dkr.ecr.eu-north-1.amazonaws.com/main:${VER}"
                 '''
             }
         }
