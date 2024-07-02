@@ -1,4 +1,4 @@
-name: IaC Deploy
+name: CI pipeline
 
 on:
   pull_request:

@@ -13,10 +13,6 @@ on:
         type: string
         default: "./infrastructure"
         required: false
-      repository:
-        required: false
-        type: string
-        default: ${{ github.repository }}
       tf_tfvars:
         description: 'Environment specific tfvars file'
         required: false
@@ -67,7 +63,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-          repository: ${{ inputs.repository }}
 
       #AWS Credentials setup
       - name: Configure AWS Credentials
