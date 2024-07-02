@@ -1,0 +1,6 @@
+---
+
+- hosts: all
+  roles:
+    - ../roles/setup
+    - ../roles/deploy
