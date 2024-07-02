@@ -118,15 +118,8 @@ jobs:
           terraform -chdir=${{ inputs.tf_directory }} apply -auto-approve -no-color -input=false --var-file=${{ inputs.tf_tfvars }}
       
       # Terraform Destroy
-      - name: Apply Terraform
-        id: apply
-        if: ( github.ref == 'refs/heads/main' || github.ref == 'main' ) &&  github.event.pull_request.merged == true && ${{ inputs.destroy == false }}
-        run: |
-          set -o pipefail
-          terraform -chdir=${{ inputs.tf_directory }} apply -auto-approve -no-color -input=false --var-file=${{ inputs.tf_tfvars }}
-
       - name: Destroy Terraform
-        id: apply
+        id: destroy
         if: github.event_name == 'workflow_dispatch' && ${{ inputs.destroy == true }}
         run: |
           set -o pipefail
