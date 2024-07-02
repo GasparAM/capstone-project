@@ -1,0 +1,138 @@
+name: IaC Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      tf_version:
+        description: 'Version of Terraform to install'
+        type: string
+        default: 1.5
+        required: false
+      tf_directory:
+        description: 'Directory in which terraform commands should be executed'
+        type: string
+        default: "./infrastructure"
+        required: false
+      repository:
+        required: false
+        type: string
+        default: ${{ github.repository }}
+      tf_tfvars:
+        description: 'Environment specific tfvars file'
+        required: false
+        type: string
+        default: "terraform.tfvars"
+      destroy:
+        description: 'Trigger destroy instead of apply'
+        required: false
+        type: boolean
+        default: false
+  
+  workflow_call:
+    inputs:
+      tf_version:
+        description: 'Version of Terraform to install'
+        type: string
+        default: 1.5
+        required: false
+      tf_directory:
+        description: 'Directory in which terraform commands should be executed'
+        type: string
+        default: "./infrastructure"
+        required: false
+      repository:
+        required: false
+        type: string
+        default: ${{ github.repository }}
+      tf_tfvars:
+        description: 'Environment specific tfvars file'
+        required: false
+        type: string
+        default: "terraform.tfvars"
+      destroy:
+        description: 'Trigger destroy instead of apply'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+
+    steps:
+      # Checkout
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          repository: ${{ inputs.repository }}
+
+      #AWS Credentials setup
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
+          aws-region: eu-north-1
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          # role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
+          role-duration-seconds: 1200
+          role-session-name: GHA-TF
+
+      # Terraform install
+      - name: Setup Terraform
+        id: inst
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '${{ inputs.tf_version }}'
+          terraform_wrapper: false
+
+      # Terraform format
+      - name: Terraform Format
+        id: fmt
+        run: 'terraform -chdir=${{ inputs.tf_directory }} fmt'
+
+      # Terraform Init
+      - name: Initialize Terraform
+        id: init
+        run: 'terraform -chdir=${{ inputs.tf_directory }} init'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      # Terraform Validate
+      - name: Terraform Validate
+        id: validate
+        run: 'terraform -chdir=${{ inputs.tf_directory }} validate'
+
+      # Terraform Plan
+      - name: Plan Terraform
+        id: plan
+        if: github.event.pull_request.base.ref == 'main' || (github.event_name == 'push' && github.ref_name != 'main')
+        run: |
+          set -o pipefail
+          terraform -chdir=${{ inputs.tf_directory }} plan -no-color -input=false -out=tfplan.binary --var-file=${{ inputs.tf_tfvars }}
+
+      # Terraform Apply
+      - name: Apply Terraform
+        id: apply
+        if: ( github.ref == 'refs/heads/main' || github.ref == 'main' ) &&  github.event.pull_request.merged == true && ${{ inputs.destroy == false }}
+        run: |
+          set -o pipefail
+          terraform -chdir=${{ inputs.tf_directory }} apply -auto-approve -no-color -input=false --var-file=${{ inputs.tf_tfvars }}
+      
+      # Terraform Destroy
+      - name: Apply Terraform
+        id: apply
+        if: ( github.ref == 'refs/heads/main' || github.ref == 'main' ) &&  github.event.pull_request.merged == true && ${{ inputs.destroy == false }}
+        run: |
+          set -o pipefail
+          terraform -chdir=${{ inputs.tf_directory }} apply -auto-approve -no-color -input=false --var-file=${{ inputs.tf_tfvars }}
+
+      - name: Destroy Terraform
+        id: apply
+        if: github.event_name == 'workflow_dispatch' && ${{ inputs.destroy == true }}
+        run: |
+          set -o pipefail
+          terraform -chdir=${{ inputs.tf_directory }} destroy -auto-approve -no-color -input=false --var-file=${{ inputs.tf_tfvars }}

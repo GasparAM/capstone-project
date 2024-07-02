@@ -1,0 +1,17 @@
+name: IaC Deploy PR
+
+on:
+  pull_request:
+    paths:
+      - '**/infrastructure/**'
+    branches:
+      - main
+    types:
+      - opened
+      - closed
+      - edited
+
+jobs:
+  terraform:
+    uses: ./.github/workflows/iac.yml
+    secrets: inherit
