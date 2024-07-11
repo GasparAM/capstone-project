@@ -17,7 +17,7 @@ on:
         description: 'Environment specific tfvars file'
         required: false
         type: string
-        default: "terraform.tfvars"
+        default: "variables.tfvars"
       destroy:
         description: 'Trigger destroy instead of apply'
         required: false
@@ -120,7 +120,7 @@ jobs:
       # Terraform Destroy
       - name: Destroy Terraform
         id: destroy
-        if: github.event_name == 'workflow_dispatch' && ${{ inputs.destroy == true }}
+        if: (${{ inputs.destroy == true }} && github.event_name == 'workflow_dispatch')
         run: |
           set -o pipefail
           terraform -chdir=${{ inputs.tf_directory }} destroy -auto-approve -no-color -input=false --var-file=${{ inputs.tf_tfvars }}
