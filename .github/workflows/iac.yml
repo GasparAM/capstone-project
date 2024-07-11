@@ -18,11 +18,12 @@ on:
         required: false
         type: string
         default: "variables.tfvars"
-      destroy:
-        description: 'Trigger destroy instead of apply'
+      tf_action:
+        description: 'TF action to trigger'
         required: false
-        type: boolean
-        default: false
+        type: choice
+        options: ['apply', 'destroy']
+        default: 'apply'
   
   workflow_call:
     inputs:
@@ -112,15 +113,8 @@ jobs:
       # Terraform Apply
       - name: Apply Terraform
         id: apply
-        if: ( github.ref == 'refs/heads/main' || github.ref == 'main' ) &&  github.event.pull_request.merged == true && github.events.inputs.destroy == 'false'
+        if: (( github.ref == 'refs/heads/main' || github.ref == 'main' ) &&  github.event.pull_request.merged == true ) || github.event_name == 'workflow_dispatch'
         run: |
           set -o pipefail
-          terraform -chdir=${{ inputs.tf_directory }} apply -auto-approve -no-color -input=false --var-file=${{ inputs.tf_tfvars }}
+          terraform -chdir=${{ inputs.tf_directory }} ${{ inputs.tf_action }} -auto-approve -no-color -input=false --var-file=${{ inputs.tf_tfvars }}
       
-      # Terraform Destroy
-      - name: Destroy Terraform
-        id: destroy
-        if: github.events.inputs.destroy == 'true' && github.event_name == 'workflow_dispatch'
-        run: |
-          set -o pipefail
-          terraform -chdir=${{ inputs.tf_directory }} destroy -auto-approve -no-color -input=false --var-file=${{ inputs.tf_tfvars }}
