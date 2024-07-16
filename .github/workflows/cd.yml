@@ -51,7 +51,7 @@ jobs:
           github_token: ${{ secrets.GH_TOKEN }}
 
       - name: Build, tag, and push docker image to Amazon ECR
-        if: ( github.ref == 'refs/heads/main' || github.ref == 'main' ) && github.event_name != 'workflow_dispatch'
+        if: ( github.ref == 'refs/heads/main' || github.ref == 'main' ) &&  github.event.pull_request.merged == true
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: petclinic_main
@@ -63,7 +63,7 @@ jobs:
       - name: Setup Ansible 
         shell: bash
         run: |
-         sudo apt install -y ansible
+         apt install -y ansible
          pip install boto3 botocore
          echo ${{ secrets.ANSIBLE_KEY }} > /home/runner/key.pem
          
