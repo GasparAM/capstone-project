@@ -37,20 +37,17 @@ on:
         type: string
         default: "./infrastructure"
         required: false
-      repository:
-        required: false
-        type: string
-        default: ${{ github.repository }}
       tf_tfvars:
         description: 'Environment specific tfvars file'
         required: false
         type: string
-        default: "terraform.tfvars"
-      destroy:
-        description: 'Trigger destroy instead of apply'
+        default: "variables.tfvars"
+      tf_action:
+        description: 'TF action to trigger'
         required: false
-        type: boolean
-        default: false
+        type: choice
+        options: ['apply', 'destroy']
+        default: 'apply'
 
 jobs:
   terraform:
