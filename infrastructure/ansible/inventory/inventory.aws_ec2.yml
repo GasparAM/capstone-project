@@ -6,4 +6,3 @@ filters:
   tag:Matcher: t1_infrastructure
 compose:
   ansible_host: public_ip_address
-  
