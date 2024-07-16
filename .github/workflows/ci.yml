@@ -1,8 +1,8 @@
-name: IaC Deploy
+name: CI pipeline
 
 on:
   pull_request:
-    paths:
+    paths_ignore:
       - '**/infrastructure/**'
     branches:
       - main

@@ -15,4 +15,4 @@
 - name: Login to ECR
   become: true
   shell: |
-    aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin "113304117666.dkr.ecr.eu-north-1.amazonaws.com"
+    aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 910681227783.dkr.ecr.eu-north-1.amazonaws.com

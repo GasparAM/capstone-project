@@ -15,11 +15,11 @@ resource "aws_security_group" "rds" {
   }
 }
 
-resource "aws_secretsmanager_secret" "secrets" {
-  name                           = "/secrets/db"
-  force_overwrite_replica_secret = true
-  recovery_window_in_days        = 0
-}
+# resource "aws_secretsmanager_secret" "secrets" {
+#   name                           = "/secrets/db"
+#   force_overwrite_replica_secret = true
+#   recovery_window_in_days        = 0
+# }
 
 data "aws_secretsmanager_secret_version" "secrets" {
   secret_id = "db"
@@ -31,15 +31,15 @@ data "aws_secretsmanager_secret_version" "secrets" {
 #   secret_string = file("./secret.json")
 # }
 
-resource "aws_secretsmanager_secret" "url" {
-  name                           = "/secrets/url"
-  force_overwrite_replica_secret = true
-  recovery_window_in_days        = 0
+# resource "aws_secretsmanager_secret" "url" {
+#   name                           = "/secrets/url"
+#   force_overwrite_replica_secret = true
+#   recovery_window_in_days        = 0
 
-}
+# }
 
 resource "aws_secretsmanager_secret_version" "url" {
-  secret_id     = aws_secretsmanager_secret.url.id
+  secret_id     = "/secrets/url"
   secret_string = "{\"MYSQL_URL\":\"jdbc:mysql://${aws_db_instance.mysql.endpoint}/${aws_db_instance.mysql.db_name}\"}"
   depends_on    = [aws_db_instance.mysql]
 }

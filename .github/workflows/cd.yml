@@ -1,0 +1,75 @@
+name: CD pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag version to deploy"
+        type: string
+        required: true
+  push:
+    paths_ignore:
+      - '**/infrastructure/**'
+    branches:
+      - main
+
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin' # See 'Supported distributions' for available options
+          java-version: '17'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
+          aws-region: eu-north-1
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          # role-external-id: ${{ secrets.AWS_ROLE_EXTERNAL_ID }}
+          role-duration-seconds: 1200
+          role-session-name: GHA-TF
+          
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      - name: Bump version and push tag
+        if: github.event_name != 'workflow_dispatch'
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GH_TOKEN }}
+
+      - name: Build, tag, and push docker image to Amazon ECR
+        if: ( github.ref == 'refs/heads/main' || github.ref == 'main' ) &&  github.event.pull_request.merged == true
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: petclinic_main
+          IMAGE_TAG: ${{ steps.tag_version.outputs.new_tag || inputs.tag }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+      
+      - name: Setup Ansible 
+        shell: bash
+        run: |
+         apt install -y ansible
+         pip install boto3 botocore
+         echo ${{ secrets.ANSIBLE_KEY }} > /home/runner/key.pem
+         
+      
+      - name: Run ansible script
+        shell: bash 
+        run: |
+          cd infrastructure/ansible
+          ansible-playbook -vv ./playbooks/main.yml --private-key /home/runner/key.pem -e "ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY_ID}} SECRET_KEY=${{ secrets.AWS_ACCESS_KEY_SECRET }} appversion=${{ steps.tag_version.outputs.new_tag || inputs.tag }}"
