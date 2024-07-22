@@ -66,6 +66,7 @@ jobs:
          sudo apt install -y ansible
          /opt/pipx/venvs/ansible-core/bin/python -m pip install boto3 botocore
          echo "${{ secrets.ANSIBLE_KEY }}" > /home/runner/key.pem
+         chmod 700 /home/runner/key.pem
       
       - name: Run ansible script
         shell: bash 
