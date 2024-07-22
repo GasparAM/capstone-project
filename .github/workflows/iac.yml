@@ -45,8 +45,7 @@ on:
       tf_action:
         description: 'TF action to trigger'
         required: false
-        type: choice
-        options: ['apply', 'destroy']
+        type: string
         default: 'apply'
 
 jobs:
