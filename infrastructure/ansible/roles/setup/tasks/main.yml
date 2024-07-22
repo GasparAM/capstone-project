@@ -15,4 +15,7 @@
 - name: Login to ECR
   become: true
   shell: |
+    aws configure set aws_access_key_id {{ACCESS_KEY}} &&
+    aws configure set aws_secret_access_key {{SECRET_KEY}} &&
+    aws configure set default.region eu-north-1
     aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 910681227783.dkr.ecr.eu-north-1.amazonaws.com
