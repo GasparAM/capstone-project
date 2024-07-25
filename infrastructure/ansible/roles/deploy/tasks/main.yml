@@ -36,4 +36,4 @@
 - name: Run container
   become: true
   shell: |
-    docker run -itd -p 80:8080 --name=petclinic {{url}}/{{repo}}:{{appversion}}
+    docker run -itd -v ~/.aws:/root/.aws -p 80:8080 --name=petclinic {{url}}/{{repo}}:{{appversion}}

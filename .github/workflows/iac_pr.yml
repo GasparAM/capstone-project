@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - '**/infrastructure/**'
+    paths_ignore:
+      - '**/infrastructure/ansible/**'
     branches:
       - main
     types:
